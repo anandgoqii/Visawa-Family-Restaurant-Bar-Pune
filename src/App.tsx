@@ -20,7 +20,7 @@ import {
 
 // --- Components ---
 
-const Navbar = () => {
+const Navbar = ({ onOpenBooking }: { onOpenBooking: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -36,7 +36,6 @@ const Navbar = () => {
     { name: 'Experience', href: '#experience' },
     { name: 'Menu', href: '#menu' },
     { name: 'Gallery', href: '#gallery' },
-    { name: 'Reservations', href: '#reserve' },
   ];
 
   return (
@@ -60,9 +59,12 @@ const Navbar = () => {
               {link.name}
             </a>
           ))}
-          <a href="#reserve" className="bg-gold text-dark px-6 py-2.5 rounded-none text-xs uppercase tracking-[0.2em] font-bold hover:bg-light-gold transition-all shadow-gold transform hover:-translate-y-1">
+          <button 
+            onClick={onOpenBooking}
+            className="bg-gold text-dark px-6 py-2.5 rounded-none text-xs uppercase tracking-[0.2em] font-bold hover:bg-light-gold transition-all shadow-gold transform hover:-translate-y-1 cursor-pointer"
+          >
             Book a Table
-          </a>
+          </button>
         </div>
 
         {/* Mobile Toggle */}
@@ -94,13 +96,15 @@ const Navbar = () => {
                 {link.name}
               </a>
             ))}
-            <a 
-              href="#reserve" 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="bg-gold text-dark px-8 py-4 rounded-none text-center font-bold tracking-widest uppercase text-sm"
+            <button 
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                onOpenBooking();
+              }}
+              className="bg-gold text-dark px-8 py-4 rounded-none text-center font-bold tracking-widest uppercase text-sm w-full"
             >
               Reserve Now
-            </a>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -108,7 +112,7 @@ const Navbar = () => {
   );
 };
 
-const Hero = () => {
+const Hero = ({ onOpenBooking }: { onOpenBooking: () => void }) => {
   return (
     <section className="relative h-screen flex items-center overflow-hidden">
       {/* Background with parallax effect */}
@@ -116,7 +120,7 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/40 to-transparent z-10" />
         <div className="absolute inset-0 bg-dark/20 z-10" />
         <img 
-          src="https://picsum.photos/seed/visawa-hero/1920/1080" 
+          src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80" 
           alt="Luxury Interior" 
           className="w-full h-full object-cover scale-110"
           referrerPolicy="no-referrer"
@@ -139,10 +143,13 @@ const Hero = () => {
             Experience Pune's most sophisticated blend of artisanal culinary creations and a curated bar experience at Visawa.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <a href="#reserve" className="bg-gold text-dark px-10 py-5 rounded-none font-bold uppercase tracking-widest text-sm hover:bg-light-gold transition-all shadow-gold inline-flex items-center group">
+            <button 
+              onClick={onOpenBooking}
+              className="bg-gold text-dark px-10 py-5 rounded-none font-bold uppercase tracking-widest text-sm hover:bg-light-gold transition-all shadow-gold inline-flex items-center group cursor-pointer"
+            >
               Reserve a Table
               <ArrowRight className="ml-3 group-hover:translate-x-2 transition-transform" />
-            </a>
+            </button>
             <a href="#menu" className="border border-gold text-gold px-10 py-5 rounded-none font-bold uppercase tracking-widest text-sm hover:bg-gold/10 transition-all inline-flex items-center">
               Explore Our Menu
             </a>
@@ -593,14 +600,131 @@ const Footer = () => {
   );
 };
 
+const BookingModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitted(true);
+    setTimeout(() => {
+      onClose();
+      setIsSubmitted(false);
+    }, 2000);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-dark/95 backdrop-blur-md"
+          />
+          
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="relative w-full max-w-xl bg-dark border border-gold/30 p-8 md:p-12 shadow-[0_0_50px_rgba(212,175,55,0.1)]"
+          >
+            <button 
+              onClick={onClose}
+              className="absolute top-6 right-6 text-gold/50 hover:text-gold transition-colors"
+            >
+              <X size={24} />
+            </button>
+
+            {isSubmitted ? (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-12"
+              >
+                <div className="w-20 h-20 border-2 border-gold rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Star className="text-gold" size={32} />
+                </div>
+                <h3 className="text-3xl font-serif mb-4">Request Received</h3>
+                <p className="text-cream/60">We will contact you shortly to confirm your reservation.</p>
+              </motion.div>
+            ) : (
+              <div>
+                <span className="text-gold uppercase tracking-[0.3em] text-xs font-bold mb-4 block text-center">Reservations</span>
+                <h2 className="text-4xl font-serif text-center mb-8">Gather at Visawa</h2>
+                
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                      <label className="text-[10px] uppercase font-bold tracking-widest text-gold/50 mb-2 block">Full Name</label>
+                      <input 
+                        required
+                        type="text" 
+                        className="w-full bg-transparent border-b border-gold/20 py-3 focus:border-gold outline-none transition-colors text-cream text-lg" 
+                        placeholder="John Doe" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-bold tracking-widest text-gold/50 mb-2 block">Guests</label>
+                      <select className="w-full bg-transparent border-b border-gold/20 py-3 focus:border-gold outline-none transition-colors text-cream appearance-none cursor-pointer">
+                        <option className="bg-dark">2 Guests</option>
+                        <option className="bg-dark">3 Guests</option>
+                        <option className="bg-dark">4 Guests</option>
+                        <option className="bg-dark">5 Guests</option>
+                        <option className="bg-dark">6+ Guests</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-bold tracking-widest text-gold/50 mb-2 block">Preferred Time</label>
+                      <div className="relative">
+                        <input 
+                          required
+                          type="time" 
+                          className="w-full bg-transparent border-b border-gold/20 py-3 focus:border-gold outline-none transition-colors text-cream text-lg invert" 
+                        />
+                      </div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="text-[10px] uppercase font-bold tracking-widest text-gold/50 mb-2 block">Contact Number</label>
+                      <input 
+                        required
+                        type="tel" 
+                        className="w-full bg-transparent border-b border-gold/20 py-3 focus:border-gold outline-none transition-colors text-cream text-lg" 
+                        placeholder="+91 00000 00000" 
+                      />
+                    </div>
+                  </div>
+                  
+                  <button className="w-full bg-gold text-dark py-5 px-8 flex items-center justify-center uppercase font-bold tracking-widest text-sm hover:bg-light-gold transition-all shadow-gold mt-8 group cursor-pointer">
+                    Confirm Reservation <Send className="ml-2 group-hover:translate-x-1 transition-transform" size={16} />
+                  </button>
+                  <p className="text-[10px] text-center text-cream/30 uppercase tracking-widest mt-6">
+                    A wait of up to 15 minutes may apply during peak hours
+                  </p>
+                </form>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 // --- App Root ---
 
 export default function App() {
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+
+  const openBooking = () => setIsBookingModalOpen(true);
+  const closeBooking = () => setIsBookingModalOpen(false);
+
   return (
     <div className="bg-dark text-cream selection:bg-gold selection:text-dark font-sans scroll-smooth">
-      <Navbar />
+      <Navbar onOpenBooking={openBooking} />
       <main>
-        <Hero />
+        <Hero onOpenBooking={openBooking} />
         <About />
         <Experience />
         <MenuPreview />
@@ -610,6 +734,8 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
+      
+      <BookingModal isOpen={isBookingModalOpen} onClose={closeBooking} />
       
       {/* Global animations or scroll progress can be added here if needed */}
       <motion.div 
